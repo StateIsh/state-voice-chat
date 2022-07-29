@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"de.maxhenkel.voicechat.api"},{"l":"de.maxhenkel.voicechat.api.audio"},{"l":"de.maxhenkel.voicechat.api.audiochannel"},{"l":"de.maxhenkel.voicechat.api.events"},{"l":"de.maxhenkel.voicechat.api.opus"},{"l":"de.maxhenkel.voicechat.api.packets"}];updateSearchResults();
