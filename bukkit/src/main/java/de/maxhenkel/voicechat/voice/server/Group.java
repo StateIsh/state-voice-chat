@@ -1,5 +1,6 @@
 package de.maxhenkel.voicechat.voice.server;
 
+import de.maxhenkel.voicechat.util.FriendlyByteBuf;
 import de.maxhenkel.voicechat.voice.common.ClientGroup;
 
 import javax.annotation.Nullable;
@@ -42,5 +43,21 @@ public class Group {
     public ClientGroup toClientGroup() {
         return new ClientGroup(id, name, password != null);
     }
+
+	public Group fromBytes(FriendlyByteBuf buf) {
+		this.id = buf.readUUID();
+		this.name = buf.readUtf(512);
+		if (buf.readBoolean()) {
+			this.password = buf.readUtf(512);
+		}
+		return this;
+	}
+
+	public void toBytes(FriendlyByteBuf buf) {
+		buf.writeUUID(this.id);
+		buf.writeUtf(this.name);
+		buf.writeBoolean(this.password != null);
+		buf.writeUtf(this.password, 512);
+	}
 
 }

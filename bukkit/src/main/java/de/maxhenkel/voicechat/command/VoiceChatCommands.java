@@ -3,15 +3,16 @@ package de.maxhenkel.voicechat.command;
 import de.maxhenkel.voicechat.Voicechat;
 import de.maxhenkel.voicechat.net.NetManager;
 import de.maxhenkel.voicechat.permission.PermissionManager;
+import de.maxhenkel.voicechat.util.FriendlyByteBuf;
+import de.maxhenkel.voicechat.util.ToExternal;
 import de.maxhenkel.voicechat.voice.common.PlayerState;
 import de.maxhenkel.voicechat.voice.server.ClientConnection;
 import de.maxhenkel.voicechat.voice.server.Group;
 import de.maxhenkel.voicechat.voice.server.PingManager;
 import de.maxhenkel.voicechat.voice.server.Server;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -75,6 +76,11 @@ public class VoiceChatCommands implements CommandExecutor {
             NetManager.sendMessage(commandSender, Component.translatable("message.voicechat.player_no_voicechat", Component.text(player.getDisplayName()), Component.text("Simple Voice Chat")));
             return true;
         }
+
+		if (player.isExternalPlayer()) {
+			commandSender.sendMessage("Player is on a external server.");
+			return true;
+		}
 
         ClientConnection clientConnection = Voicechat.SERVER.getServer().getConnections().get(player.getUniqueId());
 
@@ -143,21 +149,17 @@ public class VoiceChatCommands implements CommandExecutor {
             return true;
         }
 
-        String passwordSuffix = group.getPassword() == null ? "" : " \"" + group.getPassword() + "\"";
-        NetManager.sendMessage(player, Component.translatable("message.voicechat.invite",
-                Component.text(commandSender.getName()),
-                Component.text(group.getName()).toBuilder().color(NamedTextColor.GRAY).asComponent(),
-                Component.text("[").toBuilder().append(
-                        Component.translatable("message.voicechat.accept_invite")
-                                .toBuilder()
-                                .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "/voicechat join " + group.getId().toString() + passwordSuffix))
-                                .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("message.voicechat.accept_invite.hover")))
-                                .color(NamedTextColor.GREEN)
-                                .build()
-                ).append(Component.text("]")).color(NamedTextColor.GREEN).asComponent()
-        ));
-        NetManager.sendMessage(commandSender, Component.translatable("message.voicechat.invite_successful", Component.text(player.getName())));
+		if (player.isExternalPlayer()) {
+			FriendlyByteBuf inviteBuf = new FriendlyByteBuf();
+			inviteBuf.writeUUID(group.getId());
+			inviteBuf.writeUUID(commandSender.getUniqueId());
+			inviteBuf.writeUUID(player.getUniqueId());
 
+			Bukkit.getMultiPaperNotificationManager().notify("voicechat:external_invitation", inviteBuf.array());
+			return true;
+		}
+
+		ToExternal.inviteMessage(group, commandSender, player);
         return true;
     }
 

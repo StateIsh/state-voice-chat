@@ -8,8 +8,10 @@ import de.maxhenkel.voicechat.debug.CooldownTimer;
 import de.maxhenkel.voicechat.net.NetManager;
 import de.maxhenkel.voicechat.permission.PermissionManager;
 import de.maxhenkel.voicechat.plugins.PluginManager;
+import de.maxhenkel.voicechat.util.ToExternal;
 import de.maxhenkel.voicechat.voice.common.*;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -29,7 +31,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 public class Server extends Thread {
-
     private final Map<UUID, ClientConnection> connections;
     private final Map<UUID, UUID> secrets;
     private final int port;
@@ -248,9 +249,18 @@ public class Server extends Thread {
                 continue;
             }
             GroupSoundPacket groupSoundPacket = new GroupSoundPacket(senderState.getUuid(), packet.getData(), packet.getSequenceNumber(), null);
+
             if (senderState.getUuid().equals(state.getUuid())) {
                 continue;
             }
+
+			Player player = Bukkit.getPlayer(state.getUuid());
+			if (player != null && player.isExternalPlayer()) {
+				String serverName = player.getExternalServerName();
+				ToExternal.encodeSoundPacket(serverName, player.getUniqueId(), groupSoundPacket, SoundPacketEvent.SOURCE_GROUP);
+				continue;
+			}
+
             ClientConnection connection = getConnection(state.getUuid());
             if (connection == null) {
                 continue;
@@ -327,6 +337,13 @@ public class Server extends Thread {
             if (state.hasGroup() && state.getGroup().equals(group)) {
                 continue;
             }
+
+			if (player.isExternalPlayer()) {
+				String serverName = player.getExternalServerName();
+				ToExternal.encodeSoundPacket(serverName, player.getUniqueId(), packet, SoundPacketEvent.SOURCE_PROXIMITY);
+				continue;
+			}
+
             ClientConnection connection = getConnection(state.getUuid());
             if (connection == null) {
                 continue;

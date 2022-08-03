@@ -4,19 +4,25 @@ import de.maxhenkel.configbuilder.ConfigBuilder;
 import de.maxhenkel.voicechat.api.BukkitVoicechatService;
 import de.maxhenkel.voicechat.command.VoiceChatCommands;
 import de.maxhenkel.voicechat.config.ServerConfig;
-import de.maxhenkel.voicechat.integration.commodore.CommodoreCommands;
 import de.maxhenkel.voicechat.integration.placeholderapi.VoicechatExpansion;
 import de.maxhenkel.voicechat.net.NetManager;
 import de.maxhenkel.voicechat.plugins.PluginManager;
 import de.maxhenkel.voicechat.plugins.impl.BukkitVoicechatServiceImpl;
+import de.maxhenkel.voicechat.util.FriendlyByteBuf;
+import de.maxhenkel.voicechat.util.ToExternal;
+import de.maxhenkel.voicechat.voice.common.ExternalSoundPacket;
+import de.maxhenkel.voicechat.voice.common.NetworkMessage;
+import de.maxhenkel.voicechat.voice.common.PlayerState;
+import de.maxhenkel.voicechat.voice.server.ClientConnection;
+import de.maxhenkel.voicechat.voice.server.Group;
 import de.maxhenkel.voicechat.voice.server.ServerVoiceEvents;
-import me.lucko.commodore.Commodore;
-import me.lucko.commodore.CommodoreProvider;
+import io.netty.buffer.Unpooled;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -27,12 +33,11 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.UUID;
 import java.util.jar.Manifest;
 
 public final class Voicechat extends JavaPlugin {
-
     public static Voicechat INSTANCE;
-
     public static final String MODID = "voicechat";
     public static final Logger LOGGER = LogManager.getLogger(MODID);
 
@@ -129,6 +134,89 @@ public final class Voicechat extends JavaPlugin {
             Bukkit.getPluginManager().registerEvents(SERVER, this);
             Bukkit.getPluginManager().registerEvents(SERVER.getServer().getPlayerStateManager(), this);
         });
+
+		Bukkit.getMultiPaperNotificationManager().on(this, "voicechat:external_invite", (data) -> {
+			FriendlyByteBuf inviteBuf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
+			Group group = SERVER.getServer().getGroupManager().getGroup(inviteBuf.readUUID());
+			Player sender = Bukkit.getPlayer(inviteBuf.readUUID());
+			Player receiver = Bukkit.getPlayer(inviteBuf.readUUID());
+
+			if (receiver != null) {
+				ToExternal.inviteMessage(group, sender, receiver);
+			}
+		});
+
+		Bukkit.getMultiPaperNotificationManager().on(this, "voicechat:add_playerstate", (data) -> {
+			FriendlyByteBuf playerStateBuf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
+			PlayerState playerState = PlayerState.fromBytes(playerStateBuf);
+			SERVER.getServer().getPlayerStateManager().addState(playerState);
+		});
+
+		Bukkit.getMultiPaperNotificationManager().onString(this, "voicechat:remove_playerstate", (data) -> {
+			SERVER.getServer().getPlayerStateManager().removeState(UUID.fromString(data));
+		});
+
+		Bukkit.getMultiPaperNotificationManager().on(this, "voicechat:update_compatibility", (data) -> {
+			FriendlyByteBuf compatBuf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
+			UUID playerUUID = compatBuf.readUUID();
+			int compatibility = compatBuf.readInt();
+
+			if (compatibility == -1) {
+				SERVER.removeCompatibility(playerUUID);
+				return;
+			}
+
+			SERVER.addCompatibility(playerUUID, compatibility);
+		});
+
+		Bukkit.getMultiPaperNotificationManager().on(this, "voicechat:create_group", (data) -> {
+			FriendlyByteBuf groupBuf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
+			Group group = new Group();
+			group.fromBytes(groupBuf);
+
+			SERVER.getServer().getGroupManager().addGroup(group);
+		});
+
+		Bukkit.getMultiPaperNotificationManager().on(this, "voicechat:proximity_sound_packet_" + Bukkit.getLocalServerName(), (data) -> {
+			FriendlyByteBuf soundBuf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
+			ExternalSoundPacket packet = ExternalSoundPacket.fromBytes(soundBuf);
+
+			ClientConnection connection = SERVER.getServer().getConnection(packet.getDestinationUser());
+			if (connection != null) {
+				Player sender = Bukkit.getAllOnlinePlayers().stream().filter(p -> p.getUniqueId().equals(packet.getSoundPacket().getSender())).findFirst().orElse(null);
+				if (sender != null) {
+					sendToPlayer(packet, connection, sender);
+				}
+			} else {
+				Voicechat.logDebug("Could not send vc packet to {}", packet.getDestinationUser());
+			}
+		});
+
+		Bukkit.getMultiPaperNotificationManager().on(this, "voicechat:group_sound_packet_" + Bukkit.getLocalServerName(), (data) -> {
+			FriendlyByteBuf soundBuf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
+			ExternalSoundPacket packet = ExternalSoundPacket.fromBytes(soundBuf);
+
+			ClientConnection connection = SERVER.getServer().getConnection(packet.getDestinationUser());
+			if (connection != null) {
+				Player sender = Bukkit.getAllOnlinePlayers().stream().filter(p -> p.getUniqueId().equals(packet.getSoundPacket().getSender())).findFirst().orElse(null);
+				if (sender != null) {
+					sendToPlayer(packet, connection, sender);
+				}
+			} else {
+				Voicechat.logDebug("Could not send vc packet to {}", packet.getDestinationUser());
+			}
+		});
+	}
+
+	private void sendToPlayer(ExternalSoundPacket packet, ClientConnection connection, Player sender) {
+		PlayerState senderState = SERVER.getServer().getPlayerStateManager().getState(packet.getSoundPacket().getSender());
+		try {
+			if (!PluginManager.instance().onSoundPacket(sender, senderState, Bukkit.getPlayer(packet.getDestinationUser()), SERVER.getServer().getPlayerStateManager().getState(packet.getDestinationUser()), packet.getSoundPacket(), packet.getSource())) {
+				connection.send(SERVER.getServer(), new NetworkMessage(packet.getSoundPacket()));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
     }
 
     private static void mergeConfigs(YamlConfiguration base, YamlConfiguration add) {

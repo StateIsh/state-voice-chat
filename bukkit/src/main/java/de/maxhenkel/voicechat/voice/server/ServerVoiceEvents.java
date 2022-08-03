@@ -6,6 +6,7 @@ import de.maxhenkel.voicechat.net.RequestSecretPacket;
 import de.maxhenkel.voicechat.net.SecretPacket;
 import de.maxhenkel.voicechat.permission.PermissionManager;
 import de.maxhenkel.voicechat.plugins.PluginManager;
+import de.maxhenkel.voicechat.util.ToExternal;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
@@ -50,13 +51,22 @@ public class ServerVoiceEvents implements Listener {
         }
 
         clientCompatibilities.put(playerUUID, packet.getCompatibilityVersion());
+		Bukkit.getMultiPaperNotificationManager().notify("voicechat:update_compatibility", ToExternal.encodeCompatibility(playerUUID, packet.getCompatibilityVersion()));
         if (packet.getCompatibilityVersion() != Voicechat.COMPATIBILITY_VERSION) {
             Voicechat.LOGGER.warn("Connected client {} has incompatible voice chat version (server={}, client={})", player.getName(), Voicechat.COMPATIBILITY_VERSION, packet.getCompatibilityVersion());
             NetManager.sendMessage(player, getIncompatibleMessage(packet.getCompatibilityVersion()));
         } else {
-            initializePlayerConnection(player);
+			Bukkit.getScheduler().runTaskLaterAsynchronously(Voicechat.INSTANCE, () -> initializePlayerConnection(player), 5 * 20);
         }
     }
+
+	public void addCompatibility(UUID playerUUID, int compatibilityVersion) {
+		clientCompatibilities.put(playerUUID, compatibilityVersion);
+	}
+
+	public void removeCompatibility(UUID playerUUID) {
+		clientCompatibilities.remove(playerUUID);
+	}
 
     public boolean isCompatible(Player player) {
         return clientCompatibilities.getOrDefault(player.getUniqueId(), -1) == Voicechat.COMPATIBILITY_VERSION;
@@ -113,11 +123,11 @@ public class ServerVoiceEvents implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
+		Bukkit.getMultiPaperNotificationManager().notify("voicechat:update_compatibility", ToExternal.encodeCompatibility(event.getPlayer().getUniqueId(), -1));
         clientCompatibilities.remove(event.getPlayer().getUniqueId());
         if (server == null) {
             return;
         }
-
         server.disconnectClient(event.getPlayer().getUniqueId());
         Voicechat.LOGGER.info("Disconnecting client {}", event.getPlayer().getName());
     }

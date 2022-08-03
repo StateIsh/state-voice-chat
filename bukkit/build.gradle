@@ -30,6 +30,8 @@ processResources {
 
 dependencies {
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
+
+    implementation 'puregero.multipaper:MultiPaper-API:1.19.1-R0.1-SNAPSHOT'
     implementation "org.bukkit:craftbukkit:${bukkit_version}"
 
     implementation "net.kyori:adventure-api:${adventure_api_version}"
