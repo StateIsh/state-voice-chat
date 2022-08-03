@@ -155,7 +155,7 @@ public class VoiceChatCommands implements CommandExecutor {
 			inviteBuf.writeUUID(commandSender.getUniqueId());
 			inviteBuf.writeUUID(player.getUniqueId());
 
-			Bukkit.getMultiPaperNotificationManager().notify("voicechat:external_invitation", inviteBuf.array());
+			Bukkit.getMultiPaperNotificationManager().notify("voicechat:external_invite", inviteBuf.array());
 			return true;
 		}
 
