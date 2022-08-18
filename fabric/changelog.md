@@ -1,1 +1,1 @@
-- Improved test command
+- Updated Brazilian Portuguese language

@@ -11,7 +11,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -52,7 +51,7 @@ public class ClientVoicechat {
         }
     }
 
-    public void connect(InitializationData data) throws IOException {
+    public void connect(InitializationData data) throws Exception {
         Voicechat.LOGGER.info("Connecting to server: '" + data.getServerIP() + ":" + data.getServerPort() + "'");
         connection = new ClientVoicechatConnection(this, data);
         connection.start();
@@ -138,13 +137,18 @@ public class ClientVoicechat {
         }
     }
 
-    public void toggleRecording() {
-        setRecording(recorder == null);
+    public boolean toggleRecording() {
+        return setRecording(recorder == null);
     }
 
-    public void setRecording(boolean recording) {
+    public boolean setRecording(boolean recording) {
+        if (recording && !VoicechatClient.CLIENT_CONFIG.useNatives.get()) {
+            Voicechat.LOGGER.warn("Tried to start a recording with natives being disabled");
+            return false;
+        }
+
         if (recording == (recorder != null)) {
-            return;
+            return false;
         }
         LocalPlayer player = Minecraft.getInstance().player;
         if (recording) {
@@ -152,13 +156,13 @@ public class ClientVoicechat {
                 if (player != null) {
                     player.displayClientMessage(Component.translatable("message.voicechat.recording_disabled"), true);
                 }
-                return;
+                return false;
             }
             recorder = AudioRecorder.create();
             if (player != null) {
                 player.displayClientMessage(Component.translatable("message.voicechat.recording_started").withStyle(ChatFormatting.DARK_RED), true);
             }
-            return;
+            return true;
         }
 
         AudioRecorder rec = recorder;
@@ -167,6 +171,7 @@ public class ClientVoicechat {
             player.displayClientMessage(Component.translatable("message.voicechat.recording_stopped").withStyle(ChatFormatting.DARK_RED), true);
         }
         rec.saveAndClose();
+        return true;
     }
 
     @Nullable

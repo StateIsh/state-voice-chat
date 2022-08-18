@@ -31,6 +31,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 public class Server extends Thread {
+
     private final Map<UUID, ClientConnection> connections;
     private final Map<UUID, UUID> secrets;
     private final int port;
@@ -43,16 +44,16 @@ public class Server extends Thread {
     private final GroupManager groupManager;
     private final ServerCategoryManager categoryManager;
 
-    public Server(org.bukkit.Server server) {
+    public Server() {
         int configPort = Voicechat.SERVER_CONFIG.voiceChatPort.get();
         if (configPort < 0) {
             Voicechat.LOGGER.info("Using the Minecraft servers port as voice chat port");
-            port = server.getPort();
+            port = Bukkit.getPort();
         } else {
             port = configPort;
         }
-        this.server = server;
-        socket = PluginManager.instance().getSocketImplementation(server);
+        this.server = Bukkit.getServer();
+        socket = PluginManager.instance().getSocketImplementation();
         connections = new HashMap<>();
         secrets = new HashMap<>();
         packetQueue = new LinkedBlockingQueue<>();
@@ -101,14 +102,14 @@ public class Server extends Thread {
     public void disconnectClient(UUID playerUUID) {
         connections.remove(playerUUID);
         secrets.remove(playerUUID);
-        PluginManager.instance().onPlayerDisconnected(server, playerUUID);
+        PluginManager.instance().onPlayerDisconnected(playerUUID);
     }
 
     public void close() {
         socket.close();
         processThread.close();
 
-        PluginManager.instance().onServerStopped(server);
+        PluginManager.instance().onServerStopped();
     }
 
     public boolean isClosed() {
@@ -374,7 +375,7 @@ public class Server extends Thread {
                     Voicechat.LOGGER.error("Reconnecting player {} failed (Could not find player)", connection.getPlayerUUID());
                 }
                 playerStateManager.onPlayerVoicechatDisconnect(connection.getPlayerUUID());
-                PluginManager.instance().onPlayerDisconnected(server, connection.getPlayerUUID());
+                PluginManager.instance().onPlayerDisconnected(connection.getPlayerUUID());
                 return true;
             }
             return false;
