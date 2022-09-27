@@ -32,7 +32,8 @@ processResources {
 dependencies {
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
 
-    implementation 'puregero.multipaper:MultiPaper-API:1.19.2-R0.1-SNAPSHOT'
+    compileOnly "com.github.puregero:multipaper-api:1.19.2-R0.1-SNAPSHOT"
+    implementation "org.spigotmc:spigot-api:1.19.2-R0.1-SNAPSHOT"
     implementation "org.bukkit:craftbukkit:${bukkit_version}"
 
     implementation "net.kyori:adventure-api:${adventure_api_version}"
@@ -66,6 +67,9 @@ repositories {
     maven {
         name = "placeholderapi"
         url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/'
+    }
+    maven {
+        url "https://repo.clojars.org/"
     }
 }
 
