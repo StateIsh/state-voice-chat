@@ -4,9 +4,11 @@ import de.maxhenkel.configbuilder.ConfigBuilder;
 import de.maxhenkel.voicechat.api.BukkitVoicechatService;
 import de.maxhenkel.voicechat.command.VoiceChatCommands;
 import de.maxhenkel.voicechat.config.ServerConfig;
+import de.maxhenkel.voicechat.debug.CooldownTimer;
 import de.maxhenkel.voicechat.integration.commodore.CommodoreCommands;
 import de.maxhenkel.voicechat.integration.placeholderapi.VoicechatExpansion;
 import de.maxhenkel.voicechat.net.NetManager;
+import de.maxhenkel.voicechat.permission.PermissionManager;
 import de.maxhenkel.voicechat.plugins.PluginManager;
 import de.maxhenkel.voicechat.plugins.impl.BukkitVoicechatServiceImpl;
 import de.maxhenkel.voicechat.util.FriendlyByteBuf;
@@ -20,6 +22,7 @@ import de.maxhenkel.voicechat.voice.server.ServerVoiceEvents;
 import io.netty.buffer.Unpooled;
 import me.lucko.commodore.Commodore;
 import me.lucko.commodore.CommodoreProvider;
+import net.kyori.adventure.text.Component;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
@@ -200,9 +203,10 @@ public final class Voicechat extends JavaPlugin {
 
 	private void sendToPlayer(ExternalSoundPacket packet, ClientConnection connection, Player sender) {
 		PlayerState senderState = SERVER.getServer().getPlayerStateManager().getState(packet.getSoundPacket().getSender());
+		Player player = Bukkit.getPlayer(packet.getDestinationUser());
 		try {
-			if (!PluginManager.instance().onSoundPacket(sender, senderState, Bukkit.getPlayer(packet.getDestinationUser()), SERVER.getServer().getPlayerStateManager().getState(packet.getDestinationUser()), packet.getSoundPacket(), packet.getSource())) {
-				connection.send(SERVER.getServer(), new NetworkMessage(packet.getSoundPacket()));
+			if (!PluginManager.instance().onSoundPacket(sender, senderState, player, SERVER.getServer().getPlayerStateManager().getState(packet.getDestinationUser()), packet.getSoundPacket(), packet.getSource())) {
+				SERVER.getServer().sendSoundPacket(player, connection, packet.getSoundPacket());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
