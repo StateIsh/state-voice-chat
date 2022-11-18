@@ -1,1 +1,1 @@
-- Updated Brazilian Portuguese translation
+- Fixed server rejecting client connection
