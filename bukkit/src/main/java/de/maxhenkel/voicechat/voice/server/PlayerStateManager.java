@@ -7,7 +7,6 @@ import de.maxhenkel.voicechat.net.PlayerStatePacket;
 import de.maxhenkel.voicechat.net.PlayerStatesPacket;
 import de.maxhenkel.voicechat.net.UpdateStatePacket;
 import de.maxhenkel.voicechat.util.ToExternal;
-import de.maxhenkel.voicechat.voice.common.ClientGroup;
 import de.maxhenkel.voicechat.voice.common.PlayerState;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
