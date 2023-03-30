@@ -1,5 +1,6 @@
 package de.maxhenkel.voicechat.util;
 
+import com.github.puregero.multilib.MultiLib;
 import de.maxhenkel.voicechat.net.NetManager;
 import de.maxhenkel.voicechat.voice.common.ExternalSoundPacket;
 import de.maxhenkel.voicechat.voice.common.PlayerState;
@@ -23,9 +24,9 @@ public final class ToExternal {
 		externalPacket.toBytes(buf);
 
 		if (Objects.equals(source, "proximity")) {
-			Bukkit.getMultiPaperNotificationManager().notify("voicechat:proximity_sound_packet_" + serverName, buf.array());
+			MultiLib.notify("voicechat:proximity_sound_packet_" + serverName, buf.array());
 		} else if (Objects.equals(source, "group")) {
-			Bukkit.getMultiPaperNotificationManager().notify("voicechat:group_sound_packet_" + serverName, buf.array());
+			MultiLib.notify("voicechat:group_sound_packet_" + serverName, buf.array());
 		}
 	}
 

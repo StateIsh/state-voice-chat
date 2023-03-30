@@ -1,5 +1,6 @@
 package de.maxhenkel.voicechat;
 
+import com.github.puregero.multilib.MultiLib;
 import de.maxhenkel.configbuilder.ConfigBuilder;
 import de.maxhenkel.voicechat.api.BukkitVoicechatService;
 import de.maxhenkel.voicechat.command.VoiceChatCommands;
@@ -127,7 +128,7 @@ public final class Voicechat extends JavaPlugin {
             Bukkit.getPluginManager().registerEvents(SERVER.getServer().getPlayerStateManager(), this);
         });
 
-		Bukkit.getMultiPaperNotificationManager().on(this, "voicechat:external_invite", (data) -> {
+		MultiLib.on(this, "voicechat:external_invite", (data) -> {
 			FriendlyByteBuf inviteBuf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
 			Group group = SERVER.getServer().getGroupManager().getGroup(inviteBuf.readUUID());
 			Player sender = Bukkit.getPlayer(inviteBuf.readUUID());
@@ -138,17 +139,17 @@ public final class Voicechat extends JavaPlugin {
 			}
 		});
 
-		Bukkit.getMultiPaperNotificationManager().on(this, "voicechat:add_playerstate", (data) -> {
+		MultiLib.on(this, "voicechat:add_playerstate", (data) -> {
 			FriendlyByteBuf playerStateBuf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
 			PlayerState playerState = PlayerState.fromBytes(playerStateBuf);
 			SERVER.getServer().getPlayerStateManager().addState(playerState);
 		});
 
-		Bukkit.getMultiPaperNotificationManager().onString(this, "voicechat:remove_playerstate", (data) -> {
+		MultiLib.onString(this, "voicechat:remove_playerstate", (data) -> {
 			SERVER.getServer().getPlayerStateManager().removeState(UUID.fromString(data));
 		});
 
-		Bukkit.getMultiPaperNotificationManager().on(this, "voicechat:update_compatibility", (data) -> {
+		MultiLib.on(this, "voicechat:update_compatibility", (data) -> {
 			FriendlyByteBuf compatBuf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
 			UUID playerUUID = compatBuf.readUUID();
 			int compatibility = compatBuf.readInt();
@@ -161,7 +162,7 @@ public final class Voicechat extends JavaPlugin {
 			SERVER.addCompatibility(playerUUID, compatibility);
 		});
 
-		Bukkit.getMultiPaperNotificationManager().on(this, "voicechat:create_group", (data) -> {
+		MultiLib.on(this, "voicechat:create_group", (data) -> {
 			FriendlyByteBuf groupBuf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
 			Group group = new Group();
 			group.fromBytes(groupBuf);
@@ -169,13 +170,13 @@ public final class Voicechat extends JavaPlugin {
 			SERVER.getServer().getGroupManager().addGroup(group);
 		});
 
-		Bukkit.getMultiPaperNotificationManager().on(this, "voicechat:proximity_sound_packet_" + Bukkit.getLocalServerName(), (data) -> {
+		MultiLib.on(this, "voicechat:proximity_sound_packet_" + MultiLib.getLocalServerName(), (data) -> {
 			FriendlyByteBuf soundBuf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
 			ExternalSoundPacket packet = ExternalSoundPacket.fromBytes(soundBuf);
 
 			ClientConnection connection = SERVER.getServer().getConnection(packet.getDestinationUser());
 			if (connection != null) {
-				Player sender = Bukkit.getAllOnlinePlayers().stream().filter(p -> p.getUniqueId().equals(packet.getSoundPacket().getSender())).findFirst().orElse(null);
+				Player sender = MultiLib.getAllOnlinePlayers().stream().filter(p -> p.getUniqueId().equals(packet.getSoundPacket().getSender())).findFirst().orElse(null);
 				if (sender != null) {
 					sendToPlayer(packet, connection, sender);
 				}
@@ -184,13 +185,13 @@ public final class Voicechat extends JavaPlugin {
 			}
 		});
 
-		Bukkit.getMultiPaperNotificationManager().on(this, "voicechat:group_sound_packet_" + Bukkit.getLocalServerName(), (data) -> {
+		MultiLib.on(this, "voicechat:group_sound_packet_" + MultiLib.getLocalServerName(), (data) -> {
 			FriendlyByteBuf soundBuf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
 			ExternalSoundPacket packet = ExternalSoundPacket.fromBytes(soundBuf);
 
 			ClientConnection connection = SERVER.getServer().getConnection(packet.getDestinationUser());
 			if (connection != null) {
-				Player sender = Bukkit.getAllOnlinePlayers().stream().filter(p -> p.getUniqueId().equals(packet.getSoundPacket().getSender())).findFirst().orElse(null);
+				Player sender = MultiLib.getAllOnlinePlayers().stream().filter(p -> p.getUniqueId().equals(packet.getSoundPacket().getSender())).findFirst().orElse(null);
 				if (sender != null) {
 					sendToPlayer(packet, connection, sender);
 				}

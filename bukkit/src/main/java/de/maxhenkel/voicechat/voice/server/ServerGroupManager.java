@@ -1,5 +1,6 @@
 package de.maxhenkel.voicechat.voice.server;
 
+import com.github.puregero.multilib.MultiLib;
 import de.maxhenkel.voicechat.Voicechat;
 import de.maxhenkel.voicechat.net.*;
 import de.maxhenkel.voicechat.permission.PermissionManager;
@@ -71,7 +72,7 @@ public class ServerGroupManager {
             return;
         }
         groups.put(group.getId(), group);
-		Bukkit.getMultiPaperNotificationManager().notify("voicechat:create_group", ToExternal.encodeGroup(group));
+        MultiLib.notify("voicechat:create_group", ToExternal.encodeGroup(group));
         broadcastAddGroup(group);
 
         if (player == null) {
@@ -79,11 +80,8 @@ public class ServerGroupManager {
         }
 
         PlayerStateManager manager = getStates();
-        manager.setGroup(player, group.toClientGroup());
-		Bukkit.getMultiPaperNotificationManager().notify("voicechat:update_playerstate", ToExternal.encodePlayerState(manager.getState(player.getUniqueId())));
-        NetManager.sendToClient(player, new JoinedGroupPacket(group.toClientGroup(), false));
         manager.setGroup(player, group.getId());
-
+        MultiLib.notify("voicechat:update_playerstate", ToExternal.encodePlayerState(manager.getState(player.getUniqueId())));
         NetManager.sendToClient(player, new JoinedGroupPacket(group.getId(), false));
     }
 
@@ -107,8 +105,7 @@ public class ServerGroupManager {
         }
         PlayerStateManager manager = getStates();
         manager.setGroup(player, group.getId());
-        manager.setGroup(player, group.toClientGroup());
-		Bukkit.getMultiPaperNotificationManager().notify("voicechat:update_playerstate", ToExternal.encodePlayerState(manager.getState(player.getUniqueId())));
+        MultiLib.notify("voicechat:update_playerstate", ToExternal.encodePlayerState(manager.getState(player.getUniqueId())));
 
         NetManager.sendToClient(player, new JoinedGroupPacket(group.getId(), false));
     }
@@ -120,7 +117,7 @@ public class ServerGroupManager {
 
         PlayerStateManager manager = getStates();
         manager.setGroup(player, null);
-		Bukkit.getMultiPaperNotificationManager().notify("voicechat:update_playerstate", ToExternal.encodePlayerState(manager.getState(player.getUniqueId())));
+        MultiLib.notify("voicechat:update_playerstate", ToExternal.encodePlayerState(manager.getState(player.getUniqueId())));
         NetManager.sendToClient(player, new JoinedGroupPacket(null, false));
 
         cleanupGroups();

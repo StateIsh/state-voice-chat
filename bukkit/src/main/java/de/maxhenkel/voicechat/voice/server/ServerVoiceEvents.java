@@ -1,5 +1,6 @@
 package de.maxhenkel.voicechat.voice.server;
 
+import com.github.puregero.multilib.MultiLib;
 import de.maxhenkel.voicechat.Voicechat;
 import de.maxhenkel.voicechat.net.NetManager;
 import de.maxhenkel.voicechat.net.RequestSecretPacket;
@@ -56,7 +57,7 @@ public class ServerVoiceEvents implements Listener {
         }
 
         clientCompatibilities.put(playerUUID, packet.getCompatibilityVersion());
-		Bukkit.getMultiPaperNotificationManager().notify("voicechat:update_compatibility", ToExternal.encodeCompatibility(playerUUID, packet.getCompatibilityVersion()));
+        MultiLib.notify("voicechat:update_compatibility", ToExternal.encodeCompatibility(playerUUID, packet.getCompatibilityVersion()));
         if (packet.getCompatibilityVersion() != Voicechat.COMPATIBILITY_VERSION) {
             Voicechat.LOGGER.warn("Connected client {} has incompatible voice chat version (server={}, client={})", player.getName(), Voicechat.COMPATIBILITY_VERSION, packet.getCompatibilityVersion());
             NetManager.sendMessage(player, getIncompatibleMessage(packet.getCompatibilityVersion()));
@@ -124,7 +125,7 @@ public class ServerVoiceEvents implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-		Bukkit.getMultiPaperNotificationManager().notify("voicechat:update_compatibility", ToExternal.encodeCompatibility(event.getPlayer().getUniqueId(), -1));
+        MultiLib.notify("voicechat:update_compatibility", ToExternal.encodeCompatibility(event.getPlayer().getUniqueId(), -1));
         clientCompatibilities.remove(event.getPlayer().getUniqueId());
         if (server == null) {
             return;

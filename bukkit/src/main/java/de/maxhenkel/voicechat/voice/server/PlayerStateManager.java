@@ -1,5 +1,6 @@
 package de.maxhenkel.voicechat.voice.server;
 
+import com.github.puregero.multilib.MultiLib;
 import de.maxhenkel.voicechat.Voicechat;
 import de.maxhenkel.voicechat.net.NetManager;
 import de.maxhenkel.voicechat.net.PlayerStatePacket;
@@ -36,7 +37,7 @@ public class PlayerStateManager implements Listener {
         }
 
         state.setDisabled(packet.isDisabled());
-		Bukkit.getMultiPaperNotificationManager().notify("voicechat:add_playerstate", ToExternal.encodePlayerState(state));
+		MultiLib.notify("voicechat:add_playerstate", ToExternal.encodePlayerState(state));
         states.put(player.getUniqueId(), state);
 
         broadcastState(state);
@@ -45,7 +46,7 @@ public class PlayerStateManager implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-		Bukkit.getMultiPaperNotificationManager().notify("voicechat:remove_playerstate", event.getPlayer().getUniqueId().toString());
+        MultiLib.notify("voicechat:remove_playerstate", event.getPlayer().getUniqueId().toString());
         states.remove(event.getPlayer().getUniqueId());
         broadcastState(new PlayerState(event.getPlayer().getUniqueId(), event.getPlayer().getName(), false, true));
         Voicechat.logDebug("Removing state of {}", event.getPlayer().getName());
@@ -54,7 +55,7 @@ public class PlayerStateManager implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         PlayerState state = defaultDisconnectedState(event.getPlayer());
-		Bukkit.getMultiPaperNotificationManager().notify("voicechat:add_playerstate", ToExternal.encodePlayerState(state));
+        MultiLib.notify("voicechat:add_playerstate", ToExternal.encodePlayerState(state));
         states.put(event.getPlayer().getUniqueId(), state);
         broadcastState(state);
         Voicechat.logDebug("Setting default state of {}: {}", event.getPlayer().getName(), state);
@@ -90,7 +91,7 @@ public class PlayerStateManager implements Listener {
         }
 
         state.setDisconnected(true);
-		Bukkit.getMultiPaperNotificationManager().notify("voicechat:add_playerstate", ToExternal.encodePlayerState(state));
+        MultiLib.notify("voicechat:add_playerstate", ToExternal.encodePlayerState(state));
 
         broadcastState(state);
         Voicechat.logDebug("Set state of {} to disconnected: {}", uuid, state);
@@ -104,7 +105,7 @@ public class PlayerStateManager implements Listener {
         }
 
         state.setDisconnected(false);
-		Bukkit.getMultiPaperNotificationManager().notify("voicechat:add_playerstate", ToExternal.encodePlayerState(state));
+        MultiLib.notify("voicechat:add_playerstate", ToExternal.encodePlayerState(state));
         states.put(player.getUniqueId(), state);
 
         broadcastState(state);
@@ -127,7 +128,7 @@ public class PlayerStateManager implements Listener {
             Voicechat.logDebug("Defaulting to default state for {}: {}", player.getName(), state);
         }
         state.setGroup(group);
-		Bukkit.getMultiPaperNotificationManager().notify("voicechat:add_playerstate", ToExternal.encodePlayerState(state));
+        MultiLib.notify("voicechat:add_playerstate", ToExternal.encodePlayerState(state));
         states.put(player.getUniqueId(), state);
         broadcastState(state);
         Voicechat.logDebug("Setting group of {}: {}", player.getName(), state);

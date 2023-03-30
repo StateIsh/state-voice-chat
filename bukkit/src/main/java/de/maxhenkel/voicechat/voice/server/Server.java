@@ -1,5 +1,6 @@
 package de.maxhenkel.voicechat.voice.server;
 
+import com.github.puregero.multilib.MultiLib;
 import de.maxhenkel.voicechat.Voicechat;
 import de.maxhenkel.voicechat.api.RawUdpPacket;
 import de.maxhenkel.voicechat.api.VoicechatSocket;
@@ -277,12 +278,12 @@ public class Server extends Thread {
                 continue;
             }
 
-			Player player = Bukkit.getPlayer(state.getUuid());
-			if (player != null && player.isExternalPlayer()) {
-				String serverName = player.getExternalServerName();
-				ToExternal.encodeSoundPacket(serverName, player.getUniqueId(), groupSoundPacket, SoundPacketEvent.SOURCE_GROUP);
-				continue;
-			}
+            Player player = Bukkit.getPlayer(state.getUuid());
+            if (player != null && MultiLib.isExternalPlayer(player)) {
+                String serverName = MultiLib.getExternalServerName(player);
+                ToExternal.encodeSoundPacket(serverName, player.getUniqueId(), groupSoundPacket, SoundPacketEvent.SOURCE_GROUP);
+                continue;
+            }
 
             ClientConnection connection = getConnection(state.getUuid());
             if (connection == null) {
@@ -310,6 +311,9 @@ public class Server extends Thread {
                 if (camera instanceof Player spectatingPlayer) {
                     if (spectatingPlayer != sender) {
                         PlayerState receiverState = playerStateManager.getState(spectatingPlayer.getUniqueId());
+                        if (receiverState == null) {
+                            return;
+                        }
                         ClientConnection connection = getConnection(receiverState.getUuid());
                         if (connection == null) {
                             return;
@@ -350,16 +354,6 @@ public class Server extends Thread {
         connection.send(this, new NetworkMessage(soundPacket));
     }
 
-    public void sendSoundPacket(Player player, ClientConnection connection, SoundPacket<?> soundPacket) throws Exception {
-        if (!player.hasPermission(PermissionManager.LISTEN_PERMISSION)) {
-            CooldownTimer.run("no-listen-" + player.getUniqueId(), 30_000L, () -> {
-                NetManager.sendStatusMessage(player, Component.translatable("message.voicechat.no_listen_permission"));
-            });
-            return;
-        }
-        connection.send(this, new NetworkMessage(soundPacket));
-    }
-
     public double getBroadcastRange(float minRange) {
         double broadcastRange = Voicechat.SERVER_CONFIG.broadcastRange.get();
         if (broadcastRange < 0D) {
@@ -388,11 +382,11 @@ public class Server extends Thread {
                 continue;
             }
 
-			if (player.isExternalPlayer()) {
-				String serverName = player.getExternalServerName();
-				ToExternal.encodeSoundPacket(serverName, player.getUniqueId(), packet, SoundPacketEvent.SOURCE_PROXIMITY);
-				continue;
-			}
+            if (MultiLib.isExternalPlayer(player)) {
+                String serverName = MultiLib.getExternalServerName(player);
+                ToExternal.encodeSoundPacket(serverName, player.getUniqueId(), packet, SoundPacketEvent.SOURCE_PROXIMITY);
+                continue;
+            }
 
             ClientConnection connection = getConnection(state.getUuid());
             if (connection == null) {

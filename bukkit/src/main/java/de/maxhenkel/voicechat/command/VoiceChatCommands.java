@@ -1,5 +1,6 @@
 package de.maxhenkel.voicechat.command;
 
+import com.github.puregero.multilib.MultiLib;
 import de.maxhenkel.voicechat.Voicechat;
 import de.maxhenkel.voicechat.net.NetManager;
 import de.maxhenkel.voicechat.permission.PermissionManager;
@@ -77,7 +78,7 @@ public class VoiceChatCommands implements CommandExecutor {
             return true;
         }
 
-		if (player.isExternalPlayer()) {
+		if (MultiLib.isExternalPlayer(player)) {
 			commandSender.sendMessage("Player is on a external server.");
 			return true;
 		}
@@ -149,13 +150,13 @@ public class VoiceChatCommands implements CommandExecutor {
             return true;
         }
 
-		if (player.isExternalPlayer()) {
+		if (MultiLib.isExternalPlayer(player)) {
 			FriendlyByteBuf inviteBuf = new FriendlyByteBuf();
 			inviteBuf.writeUUID(group.getId());
 			inviteBuf.writeUUID(commandSender.getUniqueId());
 			inviteBuf.writeUUID(player.getUniqueId());
 
-			Bukkit.getMultiPaperNotificationManager().notify("voicechat:external_invite", inviteBuf.array());
+			MultiLib.notify("voicechat:external_invite", inviteBuf.array());
 			return true;
 		}
 
