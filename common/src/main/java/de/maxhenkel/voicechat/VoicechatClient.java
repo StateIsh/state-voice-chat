@@ -15,8 +15,6 @@ import de.maxhenkel.voicechat.voice.client.ClientManager;
 import de.maxhenkel.voicechat.voice.client.KeyEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.packs.repository.Pack;
 
 import java.io.IOException;
 import java.nio.file.Files;
