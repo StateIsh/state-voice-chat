@@ -359,16 +359,6 @@ public class Server extends Thread {
         connection.send(this, new NetworkMessage(soundPacket));
     }
 
-    public void sendSoundPacket(ServerPlayer player, ClientConnection connection, SoundPacket<?> soundPacket) throws Exception {
-        if (!PermissionManager.INSTANCE.LISTEN_PERMISSION.hasPermission(player)) {
-            CooldownTimer.run("no-listen-" + player.getUUID(), 30_000L, () -> {
-                player.displayClientMessage(Component.translatable("message.voicechat.no_listen_permission"), true);
-            });
-            return;
-        }
-        connection.send(this, new NetworkMessage(soundPacket));
-    }
-
     public double getBroadcastRange(float minRange) {
         double broadcastRange = Voicechat.SERVER_CONFIG.broadcastRange.get();
         if (broadcastRange < 0D) {
