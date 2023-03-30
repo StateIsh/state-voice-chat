@@ -43,6 +43,7 @@ sourceSets {
 
 dependencies {
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
+    implementation "com.github.puregero:multilib:1.1.12"
     implementation "org.bukkit:craftbukkit:${bukkit_version}"
 
     implementation "net.kyori:adventure-api:${adventure_api_version}"
@@ -93,6 +94,9 @@ repositories {
     maven {
         name = "viaversion-repo"
         url = 'https://repo.viaversion.com/'
+    }
+    maven {
+        url "https://repo.clojars.org/"
     }
 }
 
@@ -146,6 +150,7 @@ shadowJar {
     configurations = [project.configurations.shadow]
     classifier ''
     relocate 'net.kyori', "de.maxhenkel.voicechat.net.kyori"
+    relocate "com.github.puregero.multilib", "de.maxhenkel.voicechat.multilib"
     relocate 'com.google.gson', "de.maxhenkel.voicechat.gson"
     relocate 'me.lucko.commodore', "de.maxhenkel.voicechat.commodore"
     relocate 'de.maxhenkel.configbuilder', "de.maxhenkel.voicechat.configbuilder"
