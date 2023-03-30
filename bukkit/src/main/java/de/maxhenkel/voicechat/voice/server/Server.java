@@ -8,6 +8,7 @@ import de.maxhenkel.voicechat.debug.CooldownTimer;
 import de.maxhenkel.voicechat.net.NetManager;
 import de.maxhenkel.voicechat.permission.PermissionManager;
 import de.maxhenkel.voicechat.plugins.PluginManager;
+import de.maxhenkel.voicechat.util.ToExternal;
 import de.maxhenkel.voicechat.voice.common.*;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -275,6 +276,14 @@ public class Server extends Thread {
             if (senderState.getUuid().equals(state.getUuid())) {
                 continue;
             }
+
+			Player player = Bukkit.getPlayer(state.getUuid());
+			if (player != null && player.isExternalPlayer()) {
+				String serverName = player.getExternalServerName();
+				ToExternal.encodeSoundPacket(serverName, player.getUniqueId(), groupSoundPacket, SoundPacketEvent.SOURCE_GROUP);
+				continue;
+			}
+
             ClientConnection connection = getConnection(state.getUuid());
             if (connection == null) {
                 continue;
@@ -341,6 +350,16 @@ public class Server extends Thread {
         connection.send(this, new NetworkMessage(soundPacket));
     }
 
+    public void sendSoundPacket(Player player, ClientConnection connection, SoundPacket<?> soundPacket) throws Exception {
+        if (!player.hasPermission(PermissionManager.LISTEN_PERMISSION)) {
+            CooldownTimer.run("no-listen-" + player.getUniqueId(), 30_000L, () -> {
+                NetManager.sendStatusMessage(player, Component.translatable("message.voicechat.no_listen_permission"));
+            });
+            return;
+        }
+        connection.send(this, new NetworkMessage(soundPacket));
+    }
+
     public double getBroadcastRange(float minRange) {
         double broadcastRange = Voicechat.SERVER_CONFIG.broadcastRange.get();
         if (broadcastRange < 0D) {
@@ -368,6 +387,13 @@ public class Server extends Thread {
             if (receiverGroup != null && receiverGroup.isIsolated()) {
                 continue;
             }
+
+			if (player.isExternalPlayer()) {
+				String serverName = player.getExternalServerName();
+				ToExternal.encodeSoundPacket(serverName, player.getUniqueId(), packet, SoundPacketEvent.SOURCE_PROXIMITY);
+				continue;
+			}
+
             ClientConnection connection = getConnection(state.getUuid());
             if (connection == null) {
                 continue;

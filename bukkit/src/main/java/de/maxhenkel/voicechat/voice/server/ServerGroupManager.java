@@ -4,8 +4,10 @@ import de.maxhenkel.voicechat.Voicechat;
 import de.maxhenkel.voicechat.net.*;
 import de.maxhenkel.voicechat.permission.PermissionManager;
 import de.maxhenkel.voicechat.plugins.PluginManager;
+import de.maxhenkel.voicechat.util.ToExternal;
 import de.maxhenkel.voicechat.voice.common.PlayerState;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import javax.annotation.Nullable;
@@ -69,6 +71,7 @@ public class ServerGroupManager {
             return;
         }
         groups.put(group.getId(), group);
+		Bukkit.getMultiPaperNotificationManager().notify("voicechat:create_group", ToExternal.encodeGroup(group));
         broadcastAddGroup(group);
 
         if (player == null) {
@@ -76,10 +79,17 @@ public class ServerGroupManager {
         }
 
         PlayerStateManager manager = getStates();
+        manager.setGroup(player, group.toClientGroup());
+		Bukkit.getMultiPaperNotificationManager().notify("voicechat:update_playerstate", ToExternal.encodePlayerState(manager.getState(player.getUniqueId())));
+        NetManager.sendToClient(player, new JoinedGroupPacket(group.toClientGroup(), false));
         manager.setGroup(player, group.getId());
 
         NetManager.sendToClient(player, new JoinedGroupPacket(group.getId(), false));
     }
+
+	public void addGroup(Group group) {
+		groups.put(group.getId(), group);
+	}
 
     public void joinGroup(@Nullable Group group, Player player, String password) {
         if (PluginManager.instance().onJoinGroup(player, group)) {
@@ -97,6 +107,8 @@ public class ServerGroupManager {
         }
         PlayerStateManager manager = getStates();
         manager.setGroup(player, group.getId());
+        manager.setGroup(player, group.toClientGroup());
+		Bukkit.getMultiPaperNotificationManager().notify("voicechat:update_playerstate", ToExternal.encodePlayerState(manager.getState(player.getUniqueId())));
 
         NetManager.sendToClient(player, new JoinedGroupPacket(group.getId(), false));
     }
@@ -108,6 +120,7 @@ public class ServerGroupManager {
 
         PlayerStateManager manager = getStates();
         manager.setGroup(player, null);
+		Bukkit.getMultiPaperNotificationManager().notify("voicechat:update_playerstate", ToExternal.encodePlayerState(manager.getState(player.getUniqueId())));
         NetManager.sendToClient(player, new JoinedGroupPacket(null, false));
 
         cleanupGroups();
