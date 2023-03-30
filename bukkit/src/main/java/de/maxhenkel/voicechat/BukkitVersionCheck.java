@@ -28,7 +28,7 @@ public class BukkitVersionCheck {
 
     @Nullable
     public static BukkitVersion getTargetVersion() {
-        return parseBukkitVersion(BuildConstants.TARGET_BUKKIT_VERSION);
+        return parseBukkitVersion("1.19.4-R0.1-SNAPSHOT");
     }
 
     @Nullable
