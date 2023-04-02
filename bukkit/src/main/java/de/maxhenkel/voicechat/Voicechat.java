@@ -4,6 +4,9 @@ import com.github.puregero.multilib.MultiLib;
 import de.maxhenkel.configbuilder.ConfigBuilder;
 import de.maxhenkel.voicechat.api.BukkitVoicechatService;
 import de.maxhenkel.voicechat.command.VoiceChatCommands;
+import de.maxhenkel.voicechat.compatibility.BukkitCompatibilityManager;
+import de.maxhenkel.voicechat.compatibility.Compatibility;
+import de.maxhenkel.voicechat.compatibility.IncompatibleBukkitVersionException;
 import de.maxhenkel.voicechat.config.ServerConfig;
 import de.maxhenkel.voicechat.config.Translations;
 import de.maxhenkel.voicechat.integration.commodore.CommodoreCommands;
@@ -48,6 +51,7 @@ public final class Voicechat extends JavaPlugin {
 
     public static BukkitVoicechatServiceImpl apiService;
     public static NetManager netManager;
+    public static Compatibility compatibility;
 
     public static final Pattern GROUP_REGEX = Pattern.compile("^[^\\n\\r\\t\\s][^\\n\\r\\t]{0,23}$");
 
@@ -55,8 +59,16 @@ public final class Voicechat extends JavaPlugin {
     public void onEnable() {
         INSTANCE = this;
 
-        if (!BukkitVersionCheck.matchesTargetVersion()) {
-            LOGGER.fatal("Disabling Simple Voice Chat due to incompatible Bukkit version!");
+        try {
+            compatibility = BukkitCompatibilityManager.getCompatibility();
+        } catch (IncompatibleBukkitVersionException e) {
+            LOGGER.fatal("Incompatible Bukkit version: {}", e.getVersion());
+            LOGGER.fatal("Disabling Simple Voice Chat");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        } catch (Throwable t) {
+            LOGGER.fatal("Failed to load compatibility", t);
+            LOGGER.fatal("Disabling Simple Voice Chat");
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
@@ -75,13 +87,17 @@ public final class Voicechat extends JavaPlugin {
         PluginCommand voicechatCommand = getCommand(VoiceChatCommands.VOICECHAT_COMMAND);
         if (voicechatCommand != null) {
             voicechatCommand.setExecutor(new VoiceChatCommands());
-
-            if (CommodoreProvider.isSupported()) {
-                Commodore commodore = CommodoreProvider.getCommodore(this);
-                CommodoreCommands.registerCompletions(commodore);
-                LOGGER.info("Successfully initialized commodore command completion");
-            } else {
-                LOGGER.warn("Could not initialize commodore command completion");
+            try {
+                if (CommodoreProvider.isSupported()) {
+                    Commodore commodore = CommodoreProvider.getCommodore(this);
+                    CommodoreCommands.registerCompletions(commodore);
+                    LOGGER.info("Successfully initialized commodore command completion");
+                } else {
+                    LOGGER.warn("Commodore command completion is not supported");
+                }
+            } catch (Throwable t) {
+                //TODO Support versions 1.16 and older
+                LOGGER.warn("Failed to initialize commodore command completion");
             }
         } else {
             LOGGER.error("Failed to register commands");
