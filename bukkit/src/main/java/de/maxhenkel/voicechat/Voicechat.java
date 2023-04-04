@@ -86,7 +86,9 @@ public final class Voicechat extends JavaPlugin {
 
         PluginCommand voicechatCommand = getCommand(VoiceChatCommands.VOICECHAT_COMMAND);
         if (voicechatCommand != null) {
-            voicechatCommand.setExecutor(new VoiceChatCommands());
+            VoiceChatCommands voiceChatCommands = new VoiceChatCommands();
+            voicechatCommand.setExecutor(voiceChatCommands);
+            voicechatCommand.setTabCompleter(voiceChatCommands);
             try {
                 if (CommodoreProvider.isSupported()) {
                     Commodore commodore = CommodoreProvider.getCommodore(this);
@@ -96,7 +98,6 @@ public final class Voicechat extends JavaPlugin {
                     LOGGER.warn("Commodore command completion is not supported");
                 }
             } catch (Throwable t) {
-                //TODO Support versions 1.16 and older
                 LOGGER.warn("Failed to initialize commodore command completion", t);
             }
         } else {
