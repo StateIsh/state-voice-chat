@@ -21,6 +21,7 @@ import javax.annotation.Nullable;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import java.net.InetAddress;
 import java.security.InvalidKeyException;
 import java.security.SecureRandom;
 import java.util.Collection;
@@ -81,7 +82,17 @@ public class Server extends Thread {
                 try {
                     bindAddress = Voicechat.compatibility.getServerIp(server);
                     if (!bindAddress.trim().isEmpty()) {
-                        Voicechat.LOGGER.info("Using server-ip as bind address: {}", bindAddress);
+                        try {
+                            InetAddress address = InetAddress.getByName(bindAddress);
+                            if (address.isLoopbackAddress()) {
+                                bindAddress = "";
+                            } else {
+                                Voicechat.LOGGER.info("Using server-ip as bind address: {}", bindAddress);
+                            }
+                        } catch (Exception e) {
+                            Voicechat.LOGGER.warn("Invalid server-ip", e);
+                            bindAddress = "";
+                        }
                     }
                 } catch (Throwable t) {
                     Voicechat.LOGGER.warn("Failed to get server-ip from server.properties - binding to wildcard address", t);
