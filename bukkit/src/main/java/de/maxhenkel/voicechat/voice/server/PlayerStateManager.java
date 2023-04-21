@@ -6,6 +6,7 @@ import de.maxhenkel.voicechat.net.NetManager;
 import de.maxhenkel.voicechat.net.PlayerStatePacket;
 import de.maxhenkel.voicechat.net.PlayerStatesPacket;
 import de.maxhenkel.voicechat.net.UpdateStatePacket;
+import de.maxhenkel.voicechat.plugins.PluginManager;
 import de.maxhenkel.voicechat.util.ToExternal;
 import de.maxhenkel.voicechat.voice.common.PlayerState;
 import org.bukkit.Bukkit;
@@ -60,21 +61,22 @@ public class PlayerStateManager implements Listener {
         Voicechat.logDebug("Setting default state of {}: {}", event.getPlayer().getName(), state);
     }
 
-	public void removeState(UUID uuid) {
-		states.remove(uuid);
-		broadcastState(new PlayerState(uuid, Bukkit.getOfflinePlayer(uuid).getName(), false, true));
-		Voicechat.logDebug("Removing state of {}", Bukkit.getOfflinePlayer(uuid).getName());
-	}
+    public void removeState(UUID uuid) {
+        states.remove(uuid);
+        broadcastState(new PlayerState(uuid, Bukkit.getOfflinePlayer(uuid).getName(), false, true));
+        Voicechat.logDebug("Removing state of {}", Bukkit.getOfflinePlayer(uuid).getName());
+    }
 
-	public void addState(PlayerState state) {
-		states.put(state.getUuid(), state);
-		broadcastState(state);
-		Voicechat.logDebug("Adding state of {}: {}", state.getName(), state);
-	}
+    public void addState(PlayerState state) {
+        states.put(state.getUuid(), state);
+        broadcastState(state);
+        Voicechat.logDebug("Adding state of {}: {}", state.getName(), state);
+    }
 
-    private void broadcastState(PlayerState state) {
+    public void broadcastState(PlayerState state) {
         PlayerStatePacket packet = new PlayerStatePacket(state);
         Voicechat.INSTANCE.getServer().getOnlinePlayers().forEach(p -> NetManager.sendToClient(p, packet));
+        PluginManager.instance().onPlayerStateChanged(state);
     }
 
     public void onPlayerCompatibilityCheckSucceeded(Player player) {
