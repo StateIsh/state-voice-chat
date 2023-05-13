@@ -68,7 +68,7 @@ dependencies {
     shadow project(':api')
 }
 
-task generateJava(type: Copy) {
+tasks.register('generateJava', Copy) {
     from 'src/template/java'
     into "${buildDir}/generated/java"
     expand 'compatibility_version': mod_compatibility_version,
@@ -94,7 +94,7 @@ repositories {
     }
 }
 
-task copyJarToServer {
+tasks.register('copyJarToServer') {
     doLast {
         delete {
             delete "${projectDir}/run/plugins/${archivesBaseName}-${version}.jar"
@@ -108,7 +108,7 @@ task copyJarToServer {
 
 build.finalizedBy(copyJarToServer)
 
-task runServer {
+tasks.register('runServer') {
     doLast {
         javaexec {
             debug = true
@@ -122,7 +122,7 @@ task runServer {
     }
 }
 
-task runPaperServer {
+tasks.register('runPaperServer') {
     doLast {
         javaexec {
             debug = true
@@ -142,7 +142,7 @@ runPaperServer.dependsOn(build)
 
 shadowJar {
     configurations = [project.configurations.shadow]
-    classifier ''
+    archiveClassifier = ''
     relocate 'net.kyori', 'de.maxhenkel.voicechat.net.kyori'
     relocate 'com.github.puregero.multilib', "de.maxhenkel.voicechat.multilib"
     relocate 'com.google.gson', 'de.maxhenkel.voicechat.gson'
