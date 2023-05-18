@@ -130,6 +130,8 @@ public class ServerVoiceEvents implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
+        server.getGroupManager().onPlayerLoggedOut(event.getPlayer());
+
         MultiLib.notify("voicechat:update_compatibility", ToExternal.encodeCompatibility(event.getPlayer().getUniqueId(), -1));
         clientCompatibilities.remove(event.getPlayer().getUniqueId());
         if (server == null) {
