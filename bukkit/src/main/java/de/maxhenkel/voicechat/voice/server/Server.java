@@ -6,6 +6,7 @@ import de.maxhenkel.voicechat.api.RawUdpPacket;
 import de.maxhenkel.voicechat.api.VoicechatSocket;
 import de.maxhenkel.voicechat.api.events.SoundPacketEvent;
 import de.maxhenkel.voicechat.debug.CooldownTimer;
+import de.maxhenkel.voicechat.debug.VoicechatUncaughtExceptionHandler;
 import de.maxhenkel.voicechat.net.NetManager;
 import de.maxhenkel.voicechat.permission.PermissionManager;
 import de.maxhenkel.voicechat.plugins.PluginManager;
@@ -67,6 +68,7 @@ public class Server extends Thread {
         categoryManager = new ServerCategoryManager();
         setDaemon(true);
         setName("VoiceChatServerThread");
+        setUncaughtExceptionHandler(new VoicechatUncaughtExceptionHandler());
         processThread = new ProcessThread();
         processThread.start();
     }
@@ -165,6 +167,7 @@ public class Server extends Thread {
             lastKeepAlive = 0L;
             setDaemon(true);
             setName("VoiceChatPacketProcessingThread");
+            setUncaughtExceptionHandler(new VoicechatUncaughtExceptionHandler());
         }
 
         @Override
