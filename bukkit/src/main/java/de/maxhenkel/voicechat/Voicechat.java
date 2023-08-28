@@ -12,6 +12,8 @@ import de.maxhenkel.voicechat.config.Translations;
 import de.maxhenkel.voicechat.integration.commodore.CommodoreCommands;
 import de.maxhenkel.voicechat.integration.placeholderapi.VoicechatExpansion;
 import de.maxhenkel.voicechat.integration.viaversion.ViaVersionCompatibility;
+import de.maxhenkel.voicechat.logging.Log4JVoicechatLogger;
+import de.maxhenkel.voicechat.logging.VoicechatLogger;
 import de.maxhenkel.voicechat.net.NetManager;
 import de.maxhenkel.voicechat.plugins.PluginManager;
 import de.maxhenkel.voicechat.plugins.impl.BukkitVoicechatServiceImpl;
@@ -25,8 +27,6 @@ import de.maxhenkel.voicechat.voice.server.ServerVoiceEvents;
 import io.netty.buffer.Unpooled;
 import me.lucko.commodore.Commodore;
 import me.lucko.commodore.CommodoreProvider;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
@@ -41,7 +41,7 @@ public final class Voicechat extends JavaPlugin {
     public static Voicechat INSTANCE;
 
     public static final String MODID = "voicechat";
-    public static final Logger LOGGER = LogManager.getLogger(MODID);
+    public static final VoicechatLogger LOGGER = new Log4JVoicechatLogger(MODID);
 
     public static int COMPATIBILITY_VERSION = BuildConstants.COMPATIBILITY_VERSION;
 
@@ -232,10 +232,8 @@ public final class Voicechat extends JavaPlugin {
         }
     }
 
-    public static void logDebug(String message, Object... objects) {
-        if (System.getProperty("voicechat.debug") != null) {
-            LOGGER.info(message, objects);
-        }
+    public static boolean debugMode() {
+        return System.getProperty("voicechat.debug") != null;
     }
 
 }
