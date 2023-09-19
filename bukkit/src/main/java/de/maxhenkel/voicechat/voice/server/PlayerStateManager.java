@@ -64,13 +64,13 @@ public class PlayerStateManager implements Listener {
     public void removeState(UUID uuid) {
         states.remove(uuid);
         broadcastState(new PlayerState(uuid, Bukkit.getOfflinePlayer(uuid).getName(), false, true));
-        Voicechat.logDebug("Removing state of {}", Bukkit.getOfflinePlayer(uuid).getName());
+        Voicechat.LOGGER.debug("Removing state of {}", Bukkit.getOfflinePlayer(uuid).getName());
     }
 
     public void addState(PlayerState state) {
         states.put(state.getUuid(), state);
         broadcastState(state);
-        Voicechat.logDebug("Adding state of {}: {}", state.getName(), state);
+        Voicechat.LOGGER.debug("Adding state of {}: {}", state.getName(), state);
     }
 
     public void broadcastState(PlayerState state) {

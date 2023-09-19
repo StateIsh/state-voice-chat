@@ -194,7 +194,7 @@ public final class Voicechat extends JavaPlugin {
 					sendToPlayer(packet, connection, sender);
 				}
 			} else {
-				Voicechat.logDebug("Could not send vc packet to {}", packet.getDestinationUser());
+                Voicechat.LOGGER.debug("Could not send vc packet to {}", packet.getDestinationUser());
 			}
 		});
 
@@ -209,7 +209,7 @@ public final class Voicechat extends JavaPlugin {
 					sendToPlayer(packet, connection, sender);
 				}
 			} else {
-				Voicechat.logDebug("Could not send vc packet to {}", packet.getDestinationUser());
+                Voicechat.LOGGER.debug("Could not send vc packet to {}", packet.getDestinationUser());
 			}
 		});
 	}
