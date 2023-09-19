@@ -6,6 +6,7 @@ import de.maxhenkel.voicechat.api.BukkitVoicechatService;
 import de.maxhenkel.voicechat.command.VoiceChatCommands;
 import de.maxhenkel.voicechat.compatibility.BukkitCompatibilityManager;
 import de.maxhenkel.voicechat.compatibility.Compatibility;
+import de.maxhenkel.voicechat.compatibility.Compatibility1_20;
 import de.maxhenkel.voicechat.compatibility.IncompatibleBukkitVersionException;
 import de.maxhenkel.voicechat.config.ServerConfig;
 import de.maxhenkel.voicechat.config.Translations;
@@ -43,7 +44,7 @@ public final class Voicechat extends JavaPlugin {
     public static final String MODID = "voicechat";
     public static VoicechatLogger LOGGER;
 
-    public static int COMPATIBILITY_VERSION = BuildConstants.COMPATIBILITY_VERSION;
+    public static int COMPATIBILITY_VERSION = 17;
 
     public static ServerConfig SERVER_CONFIG;
     public static Translations TRANSLATIONS;
@@ -51,6 +52,7 @@ public final class Voicechat extends JavaPlugin {
 
     public static BukkitVoicechatServiceImpl apiService;
     public static NetManager netManager;
+
     public static Compatibility compatibility;
 
     public static final Pattern GROUP_REGEX = Pattern.compile("^[^\\n\\r\\t\\s][^\\n\\r\\t]{0,23}$");
@@ -64,19 +66,7 @@ public final class Voicechat extends JavaPlugin {
             LOGGER.warn("Running in debug mode - Don't leave this enabled in production!");
         }
 
-        try {
-            compatibility = BukkitCompatibilityManager.getCompatibility();
-        } catch (IncompatibleBukkitVersionException e) {
-            LOGGER.fatal("Incompatible Bukkit version: {}", e.getVersion());
-            LOGGER.fatal("Disabling Simple Voice Chat");
-            Bukkit.getPluginManager().disablePlugin(this);
-            return;
-        } catch (Throwable t) {
-            LOGGER.fatal("Failed to load compatibility", t);
-            LOGGER.fatal("Disabling Simple Voice Chat");
-            Bukkit.getPluginManager().disablePlugin(this);
-            return;
-        }
+        compatibility = new Compatibility1_20();
 
         LOGGER.info("Compatibility version {}", COMPATIBILITY_VERSION);
 
