@@ -20,6 +20,7 @@ import de.maxhenkel.voicechat.plugins.impl.config.ConfigAccessorImpl;
 import de.maxhenkel.voicechat.plugins.impl.packets.EntitySoundPacketImpl;
 import de.maxhenkel.voicechat.plugins.impl.packets.LocationalSoundPacketImpl;
 import de.maxhenkel.voicechat.plugins.impl.packets.StaticSoundPacketImpl;
+import de.maxhenkel.voicechat.util.ToExternal;
 import de.maxhenkel.voicechat.voice.common.PlayerState;
 import de.maxhenkel.voicechat.voice.common.SoundPacket;
 import de.maxhenkel.voicechat.voice.server.ClientConnection;
@@ -294,4 +295,9 @@ public class VoicechatServerApiImpl extends VoicechatApiImpl implements Voicecha
         return new ConfigAccessorImpl(Voicechat.SERVER_CONFIG.voiceChatDistance.getConfig());
     }
 
+    @Override
+    public void encodeSoundPacket(String serverName, UUID destPlayer, de.maxhenkel.voicechat.api.packets.SoundPacket packet, String source) {
+        StaticSoundPacketImpl packetImpl = (StaticSoundPacketImpl) packet;
+        ToExternal.encodeSoundPacket(serverName, destPlayer, packetImpl.getPacket(), source);
+    }
 }

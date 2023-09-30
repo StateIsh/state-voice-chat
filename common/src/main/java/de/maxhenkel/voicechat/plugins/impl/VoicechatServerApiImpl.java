@@ -296,4 +296,9 @@ public class VoicechatServerApiImpl extends VoicechatApiImpl implements Voicecha
         return new ConfigAccessorImpl(Voicechat.SERVER_CONFIG.voiceChatDistance.getConfig());
     }
 
+    @Override
+    public void encodeSoundPacket(String serverName, UUID destPlayer, de.maxhenkel.voicechat.api.packets.SoundPacket packet, String source) {
+        throw new IllegalStateException("Cannot encode sound packet on server");
+    }
+
 }

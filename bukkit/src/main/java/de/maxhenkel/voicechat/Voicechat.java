@@ -3,6 +3,8 @@ package de.maxhenkel.voicechat;
 import com.github.puregero.multilib.MultiLib;
 import de.maxhenkel.configbuilder.ConfigBuilder;
 import de.maxhenkel.voicechat.api.BukkitVoicechatService;
+import de.maxhenkel.voicechat.api.VoicechatConnection;
+import de.maxhenkel.voicechat.api.events.SoundPacketEvent;
 import de.maxhenkel.voicechat.command.VoiceChatCommands;
 import de.maxhenkel.voicechat.compatibility.BukkitCompatibilityManager;
 import de.maxhenkel.voicechat.compatibility.Compatibility;
@@ -18,12 +20,15 @@ import de.maxhenkel.voicechat.logging.VoicechatLogger;
 import de.maxhenkel.voicechat.net.NetManager;
 import de.maxhenkel.voicechat.plugins.PluginManager;
 import de.maxhenkel.voicechat.plugins.impl.BukkitVoicechatServiceImpl;
+import de.maxhenkel.voicechat.plugins.impl.VoicechatServerApiImpl;
 import de.maxhenkel.voicechat.util.FriendlyByteBuf;
 import de.maxhenkel.voicechat.util.ToExternal;
 import de.maxhenkel.voicechat.voice.common.ExternalSoundPacket;
+import de.maxhenkel.voicechat.voice.common.NetworkMessage;
 import de.maxhenkel.voicechat.voice.common.PlayerState;
 import de.maxhenkel.voicechat.voice.server.ClientConnection;
 import de.maxhenkel.voicechat.voice.server.Group;
+import de.maxhenkel.voicechat.voice.server.Server;
 import de.maxhenkel.voicechat.voice.server.ServerVoiceEvents;
 import io.netty.buffer.Unpooled;
 import me.lucko.commodore.Commodore;
@@ -202,6 +207,21 @@ public final class Voicechat extends JavaPlugin {
                 Voicechat.LOGGER.debug("Could not send vc packet to {}", packet.getDestinationUser());
 			}
 		});
+
+        MultiLib.on(this, "voicechat:plugin_sound_packet_" + MultiLib.getLocalServerName(), (data) -> {
+            FriendlyByteBuf soundBuf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
+            ExternalSoundPacket packet = ExternalSoundPacket.fromBytes(soundBuf);
+
+            ClientConnection connection = SERVER.getServer().getConnection(packet.getDestinationUser());
+
+            try {
+                if (connection != null) {
+                    connection.send(SERVER.getServer(), new NetworkMessage(packet.getSoundPacket()));
+                }
+            } catch (Exception e) {
+                Voicechat.LOGGER.debug("Could not send vc packet to {}", packet.getDestinationUser());
+            }
+        });
 	}
 
 	private void sendToPlayer(ExternalSoundPacket packet, ClientConnection connection, Player sender) {
