@@ -21,8 +21,7 @@ import de.maxhenkel.voicechat.plugins.impl.packets.EntitySoundPacketImpl;
 import de.maxhenkel.voicechat.plugins.impl.packets.LocationalSoundPacketImpl;
 import de.maxhenkel.voicechat.plugins.impl.packets.StaticSoundPacketImpl;
 import de.maxhenkel.voicechat.util.ToExternal;
-import de.maxhenkel.voicechat.voice.common.PlayerState;
-import de.maxhenkel.voicechat.voice.common.SoundPacket;
+import de.maxhenkel.voicechat.voice.common.*;
 import de.maxhenkel.voicechat.voice.server.ClientConnection;
 import de.maxhenkel.voicechat.voice.server.Server;
 import de.maxhenkel.voicechat.voice.server.ServerWorldUtils;
@@ -299,5 +298,25 @@ public class VoicechatServerApiImpl extends VoicechatApiImpl implements Voicecha
     public void encodeSoundPacket(String serverName, UUID destPlayer, de.maxhenkel.voicechat.api.packets.SoundPacket packet, String source) {
         StaticSoundPacketImpl packetImpl = (StaticSoundPacketImpl) packet;
         ToExternal.encodeSoundPacket(serverName, destPlayer, packetImpl.getPacket(), source);
+    }
+
+    @Override
+    public byte[] externalEncodeSoundPacket(String serverName, UUID destPlayer, de.maxhenkel.voicechat.api.packets.SoundPacket packet, String source) {
+        StaticSoundPacketImpl packetImpl = (StaticSoundPacketImpl) packet;
+        return ToExternal.externalEncodeSoundPacket(serverName, destPlayer, packetImpl.getPacket(), source);
+    }
+
+    @Override
+    public de.maxhenkel.voicechat.api.packets.SoundPacket externalDecodeSoundPacket(byte[] data) {
+        SoundPacket<?> packet = ToExternal.externalDecodeSoundPacket(data);
+        if (packet instanceof StaticSoundPacket || packet instanceof GroupSoundPacket) {
+            return new StaticSoundPacketImpl((GroupSoundPacket) packet);
+        } else if (packet instanceof LocationalSoundPacket) {
+            return new LocationalSoundPacketImpl((LocationSoundPacket) packet);
+        } else if (packet instanceof EntitySoundPacket) {
+            return new EntitySoundPacketImpl((PlayerSoundPacket) packet);
+        } else {
+            throw new IllegalArgumentException("Unknown sound packet type");
+        }
     }
 }

@@ -321,4 +321,8 @@ public interface VoicechatServerApi extends VoicechatApi {
     ConfigAccessor getServerConfig();
 
     void encodeSoundPacket(String serverName, java.util.UUID destPlayer, SoundPacket packet, String source);
+
+    byte[] externalEncodeSoundPacket(String serverName, UUID destPlayer, SoundPacket packet, String source);
+
+    SoundPacket externalDecodeSoundPacket(byte[] data);
 }

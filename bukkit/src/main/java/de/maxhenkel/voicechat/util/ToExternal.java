@@ -7,6 +7,7 @@ import de.maxhenkel.voicechat.voice.common.ExternalSoundPacket;
 import de.maxhenkel.voicechat.voice.common.PlayerState;
 import de.maxhenkel.voicechat.voice.common.SoundPacket;
 import de.maxhenkel.voicechat.voice.server.Group;
+import io.netty.buffer.Unpooled;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -31,6 +32,19 @@ public final class ToExternal {
 		} else {
 			MultiLib.notify("voicechat:plugin_sound_packet_" + serverName, buf.array());
 		}
+	}
+
+	public static byte[] externalEncodeSoundPacket(String serverName, UUID destPlayer, SoundPacket<?> packet, String source) {
+		FriendlyByteBuf buf = new FriendlyByteBuf();
+		ExternalSoundPacket externalPacket = new ExternalSoundPacket(destPlayer, packet, source);
+		externalPacket.toBytes(buf);
+		return buf.array();
+	}
+
+	public static SoundPacket<?> externalDecodeSoundPacket(byte[] data) {
+		FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
+		ExternalSoundPacket packet = ExternalSoundPacket.fromBytes(buf);
+		return packet.getSoundPacket();
 	}
 
 	public static byte[] encodeGroup(Group group) {

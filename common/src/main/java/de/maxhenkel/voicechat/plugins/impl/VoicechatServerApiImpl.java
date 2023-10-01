@@ -301,4 +301,14 @@ public class VoicechatServerApiImpl extends VoicechatApiImpl implements Voicecha
         throw new IllegalStateException("Cannot encode sound packet on server");
     }
 
+    @Override
+    public byte[] externalEncodeSoundPacket(String serverName, UUID destPlayer, de.maxhenkel.voicechat.api.packets.SoundPacket packet, String source) {
+        return new byte[0];
+    }
+
+    @Override
+    public de.maxhenkel.voicechat.api.packets.SoundPacket externalDecodeSoundPacket(byte[] data) {
+        return null;
+    }
+
 }
