@@ -178,7 +178,7 @@ public final class Voicechat extends JavaPlugin {
 			SERVER.getServer().getGroupManager().addGroup(group);
 		});
 
-		MultiLib.on(this, "voicechat:proximity_sound_packet_" + MultiLib.getLocalServerName(), (data) -> {
+		MultiLib.on(this, "voicechat:proximity_sound_packet", (data) -> {
 			FriendlyByteBuf soundBuf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
 			ExternalSoundPacket packet = ExternalSoundPacket.fromBytes(soundBuf);
 
@@ -193,7 +193,7 @@ public final class Voicechat extends JavaPlugin {
 			}
 		});
 
-		MultiLib.on(this, "voicechat:group_sound_packet_" + MultiLib.getLocalServerName(), (data) -> {
+		MultiLib.on(this, "voicechat:group_sound_packet", (data) -> {
 			FriendlyByteBuf soundBuf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
 			ExternalSoundPacket packet = ExternalSoundPacket.fromBytes(soundBuf);
 
@@ -208,7 +208,7 @@ public final class Voicechat extends JavaPlugin {
 			}
 		});
 
-        MultiLib.on(this, "voicechat:plugin_sound_packet_" + MultiLib.getLocalServerName(), (data) -> {
+        MultiLib.on(this, "voicechat:plugin_sound_packet", (data) -> {
             FriendlyByteBuf soundBuf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
             ExternalSoundPacket packet = ExternalSoundPacket.fromBytes(soundBuf);
 

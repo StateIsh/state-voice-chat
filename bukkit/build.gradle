@@ -45,7 +45,7 @@ sourceSets {
 
 dependencies {
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
-    shadow "com.github.puregero:multilib:1.1.12"
+    shadow "com.github.puregero:multilib:1.1.13"
     implementation "org.bukkit:craftbukkit:${bukkit_version}"
 
     implementation "net.kyori:adventure-api:${adventure_api_version}"

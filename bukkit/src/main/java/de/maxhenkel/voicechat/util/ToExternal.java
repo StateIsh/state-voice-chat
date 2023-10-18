@@ -25,12 +25,24 @@ public final class ToExternal {
 		ExternalSoundPacket externalPacket = new ExternalSoundPacket(destPlayer, packet, source);
 		externalPacket.toBytes(buf);
 
-		if (Objects.equals(source, SoundPacketEvent.SOURCE_PROXIMITY)) {
-			MultiLib.notify("voicechat:proximity_sound_packet_" + serverName, buf.array());
-		} else if (Objects.equals(source, SoundPacketEvent.SOURCE_GROUP)) {
-			MultiLib.notify("voicechat:group_sound_packet_" + serverName, buf.array());
+		Player player = Bukkit.getPlayer(destPlayer);
+
+		if (player != null) {
+			if (Objects.equals(source, SoundPacketEvent.SOURCE_PROXIMITY)) {
+				MultiLib.notifyOwningServer(player, "voicechat:proximity_sound_packet", buf.array());
+			} else if (Objects.equals(source, SoundPacketEvent.SOURCE_GROUP)) {
+				MultiLib.notifyOwningServer(player, "voicechat:group_sound_packet", buf.array());
+			} else {
+				MultiLib.notifyOwningServer(player, "voicechat:plugin_sound_packet", buf.array());
+			}
 		} else {
-			MultiLib.notify("voicechat:plugin_sound_packet_" + serverName, buf.array());
+			if (Objects.equals(source, SoundPacketEvent.SOURCE_PROXIMITY)) {
+				MultiLib.notify("voicechat:proximity_sound_packet", buf.array());
+			} else if (Objects.equals(source, SoundPacketEvent.SOURCE_GROUP)) {
+				MultiLib.notify("voicechat:group_sound_packet", buf.array());
+			} else {
+				MultiLib.notify("voicechat:plugin_sound_packet", buf.array());
+			}
 		}
 	}
 
