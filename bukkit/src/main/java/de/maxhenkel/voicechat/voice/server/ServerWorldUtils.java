@@ -1,5 +1,6 @@
 package de.maxhenkel.voicechat.voice.server;
 
+import com.github.puregero.multilib.MultiLib;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -17,6 +18,18 @@ public class ServerWorldUtils {
         for (int i = 0; i < players.size(); i++) {
             Player player = players.get(i);
             if (isInRange(player.getLocation(), pos, range) && filter.test(player)) {
+                nearbyPlayers.add(player);
+            }
+        }
+        return nearbyPlayers;
+    }
+
+    public static Collection<Player> getLocalPlayersInRange(World level, Location pos, double range, Predicate<Player> filter) {
+        List<Player> nearbyPlayers = new ArrayList<>();
+        List<Player> players = level.getPlayers();
+        for (int i = 0; i < players.size(); i++) {
+            Player player = players.get(i);
+            if (MultiLib.isLocalPlayer(player) && isInRange(player.getLocation(), pos, range) && filter.test(player)) {
                 nearbyPlayers.add(player);
             }
         }

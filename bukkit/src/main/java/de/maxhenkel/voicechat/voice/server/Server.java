@@ -10,6 +10,7 @@ import de.maxhenkel.voicechat.debug.VoicechatUncaughtExceptionHandler;
 import de.maxhenkel.voicechat.net.NetManager;
 import de.maxhenkel.voicechat.permission.PermissionManager;
 import de.maxhenkel.voicechat.plugins.PluginManager;
+import de.maxhenkel.voicechat.util.FriendlyByteBuf;
 import de.maxhenkel.voicechat.util.ToExternal;
 import de.maxhenkel.voicechat.voice.common.*;
 import net.kyori.adventure.text.Component;
@@ -353,7 +354,7 @@ public class Server extends Thread {
         SoundPacket<?> soundPacket = null;
         String source = null;
         if (sender.getGameMode().equals(GameMode.SPECTATOR)) {
-            if (Voicechat.SERVER_CONFIG.spectatorPlayerPossession.get()) {
+            if (MultiLib.isLocalPlayer(sender) && Voicechat.SERVER_CONFIG.spectatorPlayerPossession.get()) {
                 Entity camera = sender.getSpectatorTarget();
                 if (camera instanceof Player) {
                     Player spectatingPlayer = (Player) camera;
@@ -384,7 +385,25 @@ public class Server extends Thread {
             source = SoundPacketEvent.SOURCE_PROXIMITY;
         }
 
-        broadcast(ServerWorldUtils.getPlayersInRange(sender.getWorld(), sender.getLocation(), getBroadcastRange(distance), p -> !p.getUniqueId().equals(sender.getUniqueId())), soundPacket, sender, senderState, groupId, source);
+        FriendlyByteBuf buf = new FriendlyByteBuf();
+        buf.writeUUID(sender.getUniqueId());
+        buf.writeByteArray(ToExternal.externalEncodeSoundPacket(MultiLib.getExternalServerName(sender), sender.getUniqueId(), soundPacket, source));
+        senderState.toBytes(buf);
+        if (groupId == null) {
+            buf.writeBoolean(false);
+        } else {
+            buf.writeBoolean(true);
+            buf.writeUUID(groupId);
+        }
+        buf.writeFloat(distance);
+        buf.writeUtf(source);
+        MultiLib.notify(sender.getLocation().getChunk(), "voicechat:broadcast_proximity_sound_packet", buf.array());
+
+        broadcastProximityPacket(sender, senderState, soundPacket, groupId, source, distance);
+    }
+
+    public void broadcastProximityPacket(Player sender, PlayerState senderState, SoundPacket<?> soundPacket, @Nullable UUID groupId, String source, float distance) throws Exception {
+        broadcast(ServerWorldUtils.getLocalPlayersInRange(sender.getWorld(), sender.getLocation(), getBroadcastRange(distance), p -> !p.getUniqueId().equals(sender.getUniqueId())), soundPacket, sender, senderState, groupId, source);
     }
 
     public void sendSoundPacket(Player player, ClientConnection connection, SoundPacket<?> soundPacket) throws Exception {

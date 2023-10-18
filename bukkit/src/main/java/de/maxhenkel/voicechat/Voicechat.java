@@ -26,6 +26,7 @@ import de.maxhenkel.voicechat.util.ToExternal;
 import de.maxhenkel.voicechat.voice.common.ExternalSoundPacket;
 import de.maxhenkel.voicechat.voice.common.NetworkMessage;
 import de.maxhenkel.voicechat.voice.common.PlayerState;
+import de.maxhenkel.voicechat.voice.common.SoundPacket;
 import de.maxhenkel.voicechat.voice.server.ClientConnection;
 import de.maxhenkel.voicechat.voice.server.Group;
 import de.maxhenkel.voicechat.voice.server.Server;
@@ -220,6 +221,21 @@ public final class Voicechat extends JavaPlugin {
                 }
             } catch (Exception e) {
                 Voicechat.LOGGER.debug("Could not send vc packet to {}", packet.getDestinationUser());
+            }
+        });
+
+        MultiLib.on(this, "voicechat:broadcast_proximity_sound_packet", (data) -> {
+            FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
+            Player sender = Bukkit.getPlayer(buf.readUUID());
+            SoundPacket<?> soundPacket = ToExternal.externalDecodeSoundPacket(buf.array());
+            PlayerState playerState = PlayerState.fromBytes(buf);
+            UUID groupId = buf.readBoolean() ? buf.readUUID() : null;
+            float distance = buf.readFloat();
+            String source = buf.readUtf();
+            try {
+                SERVER.getServer().broadcastProximityPacket(sender, playerState, soundPacket, groupId, source, distance);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
 	}
