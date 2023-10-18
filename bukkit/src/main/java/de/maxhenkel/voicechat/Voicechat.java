@@ -185,7 +185,7 @@ public final class Voicechat extends JavaPlugin {
 
 			ClientConnection connection = SERVER.getServer().getConnection(packet.getDestinationUser());
 			if (connection != null) {
-				Player sender = MultiLib.getAllOnlinePlayers().stream().filter(p -> p.getUniqueId().equals(packet.getSoundPacket().getSender())).findFirst().orElse(null);
+				Player sender = Bukkit.getPlayer(packet.getSoundPacket().getSender());
 				if (sender != null) {
 					sendToPlayer(packet, connection, sender);
 				}
@@ -200,7 +200,7 @@ public final class Voicechat extends JavaPlugin {
 
 			ClientConnection connection = SERVER.getServer().getConnection(packet.getDestinationUser());
 			if (connection != null) {
-				Player sender = MultiLib.getAllOnlinePlayers().stream().filter(p -> p.getUniqueId().equals(packet.getSoundPacket().getSender())).findFirst().orElse(null);
+                Player sender = Bukkit.getPlayer(packet.getSoundPacket().getSender());
 				if (sender != null) {
 					sendToPlayer(packet, connection, sender);
 				}
