@@ -227,7 +227,7 @@ public final class Voicechat extends JavaPlugin {
         MultiLib.on(this, "voicechat:broadcast_proximity_sound_packet", (data) -> {
             FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
             Player sender = Bukkit.getPlayer(buf.readUUID());
-            SoundPacket<?> soundPacket = ToExternal.externalDecodeSoundPacket(buf.array());
+            SoundPacket<?> soundPacket = ToExternal.externalDecodeSoundPacket(buf.readByteArray());
             PlayerState playerState = PlayerState.fromBytes(buf);
             UUID groupId = buf.readBoolean() ? buf.readUUID() : null;
             float distance = buf.readFloat();
