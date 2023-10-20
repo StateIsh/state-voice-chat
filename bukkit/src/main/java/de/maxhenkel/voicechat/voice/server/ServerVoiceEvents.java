@@ -13,6 +13,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -133,11 +134,20 @@ public class ServerVoiceEvents implements Listener {
     }
 
     @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        if (isCompatible(event.getPlayer())) {
+            // Yolo, let's just connect them straight away
+            initializePlayerConnection(event.getPlayer());
+        }
+    }
+
+    @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         server.getGroupManager().onPlayerLoggedOut(event.getPlayer());
 
-        MultiLib.notify("voicechat:update_compatibility", ToExternal.encodeCompatibility(event.getPlayer().getUniqueId(), -1));
-        clientCompatibilities.remove(event.getPlayer().getUniqueId());
+        // Remember their compatibility version for when they rejoin
+        // MultiLib.notify("voicechat:update_compatibility", ToExternal.encodeCompatibility(event.getPlayer().getUniqueId(), -1));
+        // clientCompatibilities.remove(event.getPlayer().getUniqueId());
         if (server == null) {
             return;
         }
