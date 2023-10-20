@@ -89,7 +89,9 @@ public class Group {
 		buf.writeUUID(this.id);
 		buf.writeUtf(this.name);
 		buf.writeBoolean(this.password != null);
-		buf.writeUtf(this.password, 512);
+		if (this.password != null) {
+            buf.writeUtf(this.password, 512);
+        }
 	}
 
 }
