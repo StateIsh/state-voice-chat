@@ -62,7 +62,7 @@ public class ServerVoiceEvents implements Listener {
             Voicechat.LOGGER.warn("Connected client {} has incompatible voice chat version (server={}, client={})", player.getName(), Voicechat.COMPATIBILITY_VERSION, packet.getCompatibilityVersion());
             NetManager.sendMessage(player, getIncompatibleMessage(packet.getCompatibilityVersion()));
         } else {
-			Bukkit.getScheduler().runTaskLaterAsynchronously(Voicechat.INSTANCE, () -> initializePlayerConnection(player), 5 * 20);
+			initializePlayerConnection(player);
         }
     }
 
