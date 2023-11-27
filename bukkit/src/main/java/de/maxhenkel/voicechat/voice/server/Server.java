@@ -29,8 +29,10 @@ import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -48,6 +50,8 @@ public class Server extends Thread {
     private final PlayerStateManager playerStateManager;
     private final ServerGroupManager groupManager;
     private final ServerCategoryManager categoryManager;
+
+    private final Queue<Runnable> tasks = new ConcurrentLinkedQueue<>();
 
     public Server() {
         int configPort = Voicechat.SERVER_CONFIG.voiceChatPort.get();
@@ -95,6 +99,10 @@ public class Server extends Thread {
         } catch (Exception e) {
             Voicechat.LOGGER.error("Voice chat server error", e);
         }
+    }
+
+    public void runTask(Runnable runnable) {
+        tasks.add(runnable);
     }
 
     private String getBindAddress() {
@@ -192,6 +200,11 @@ public class Server extends Thread {
                     if (keepAliveTime - lastKeepAlive > Voicechat.SERVER_CONFIG.keepAlive.get()) {
                         sendKeepAlives();
                         lastKeepAlive = keepAliveTime;
+                    }
+
+                    Runnable task;
+                    while ((task = tasks.poll()) != null) {
+                        task.run();
                     }
 
                     RawUdpPacket rawPacket = packetQueue.poll(10, TimeUnit.MILLISECONDS);

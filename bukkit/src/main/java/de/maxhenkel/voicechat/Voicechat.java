@@ -225,18 +225,20 @@ public final class Voicechat extends JavaPlugin {
         });
 
         MultiLib.on(this, "voicechat:broadcast_proximity_sound_packet", (data) -> {
-            FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
-            Player sender = Bukkit.getPlayer(buf.readUUID());
-            SoundPacket<?> soundPacket = ToExternal.externalDecodeSoundPacket(buf.readByteArray());
-            PlayerState playerState = PlayerState.fromBytes(buf);
-            UUID groupId = buf.readBoolean() ? buf.readUUID() : null;
-            float distance = buf.readFloat();
-            String source = buf.readUtf();
-            try {
-                SERVER.getServer().broadcastProximityPacket(sender, playerState, soundPacket, groupId, source, distance);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            SERVER.getServer().runTask(() -> {
+                FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
+                Player sender = Bukkit.getPlayer(buf.readUUID());
+                SoundPacket<?> soundPacket = ToExternal.externalDecodeSoundPacket(buf.readByteArray());
+                PlayerState playerState = PlayerState.fromBytes(buf);
+                UUID groupId = buf.readBoolean() ? buf.readUUID() : null;
+                float distance = buf.readFloat();
+                String source = buf.readUtf();
+                try {
+                    SERVER.getServer().broadcastProximityPacket(sender, playerState, soundPacket, groupId, source, distance);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
         });
 	}
 
