@@ -148,6 +148,15 @@ public final class Voicechat extends JavaPlugin {
 			}
 		});
 
+        MultiLib.onString(this, "voicechat:playerstate_request", (data) -> {
+            UUID uuid = UUID.fromString(data);
+            Player player = Bukkit.getPlayer(uuid);
+            PlayerState state = SERVER.getServer().getPlayerStateManager().getState(uuid);
+            if (player != null && MultiLib.isLocalPlayer(player) && state != null) {
+                MultiLib.notify("voicechat:add_playerstate", ToExternal.encodePlayerState(state));
+            }
+        });
+
 		MultiLib.on(this, "voicechat:add_playerstate", (data) -> {
 			FriendlyByteBuf playerStateBuf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
 			PlayerState playerState = PlayerState.fromBytes(playerStateBuf);

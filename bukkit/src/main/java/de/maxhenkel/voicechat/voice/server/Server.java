@@ -10,6 +10,7 @@ import de.maxhenkel.voicechat.debug.VoicechatUncaughtExceptionHandler;
 import de.maxhenkel.voicechat.net.NetManager;
 import de.maxhenkel.voicechat.permission.PermissionManager;
 import de.maxhenkel.voicechat.plugins.PluginManager;
+import de.maxhenkel.voicechat.util.Cooldown;
 import de.maxhenkel.voicechat.util.FriendlyByteBuf;
 import de.maxhenkel.voicechat.util.ToExternal;
 import de.maxhenkel.voicechat.voice.common.*;
@@ -50,6 +51,7 @@ public class Server extends Thread {
     private final PlayerStateManager playerStateManager;
     private final ServerGroupManager groupManager;
     private final ServerCategoryManager categoryManager;
+    private final Cooldown<UUID> stateFetcherCooldown = new Cooldown<>(1000L);
 
     private final Queue<Runnable> tasks = new ConcurrentLinkedQueue<>();
 
@@ -465,6 +467,9 @@ public class Server extends Thread {
         for (Player player : players) {
             PlayerState state = playerStateManager.getState(player.getUniqueId());
             if (state == null) {
+                // If a player's online, they should have a state, so let's try requesting it from other servers
+                stateFetcherCooldown.run(player.getUniqueId(), () ->
+                        MultiLib.notify("voicechat:playerstate_request", player.getUniqueId().toString()));
                 continue;
             }
             if (state.hasGroup() && state.getGroup().equals(groupId)) {
