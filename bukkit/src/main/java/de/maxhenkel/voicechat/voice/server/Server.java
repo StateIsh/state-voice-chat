@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -54,6 +55,9 @@ public class Server extends Thread {
     private final Cooldown<UUID> stateFetcherCooldown = new Cooldown<>(1000L);
 
     private final Queue<Runnable> tasks = new ConcurrentLinkedQueue<>();
+
+    public final Map<UUID, Long> externalLastSequenceNumbers = new ConcurrentHashMap<>();
+    public final Map<UUID, Long> lastSequenceNumbers = new ConcurrentHashMap<>();
 
     public Server() {
         int configPort = Voicechat.SERVER_CONFIG.voiceChatPort.get();
@@ -78,6 +82,18 @@ public class Server extends Thread {
         setUncaughtExceptionHandler(new VoicechatUncaughtExceptionHandler());
         processThread = new ProcessThread();
         processThread.start();
+
+        MultiLib.onString(Voicechat.INSTANCE, "voicechat:last_sequence_number", message -> {
+            String[] split = message.split("\t");
+            UUID uuid = UUID.fromString(split[0]);
+            long sequenceNumber = Long.parseLong(split[1]);
+            externalLastSequenceNumbers.compute(uuid, (key, value) -> {
+                if (value == null) {
+                    value = 0L;
+                }
+                return Math.max(value, sequenceNumber);
+            });
+        });
     }
 
     @Override
@@ -168,6 +184,7 @@ public class Server extends Thread {
         unCheckedConnections.remove(playerUUID);
         secrets.remove(playerUUID);
         PluginManager.instance().onPlayerDisconnected(playerUUID);
+        MultiLib.notify("voicechat:last_sequence_number", playerUUID.toString() + "\t" + lastSequenceNumbers.getOrDefault(playerUUID, 0L));
     }
 
     public void close() {
@@ -307,6 +324,8 @@ public class Server extends Thread {
         if (player == null) {
             return;
         }
+        packet.setSequenceNumber(packet.getSequenceNumber() + externalLastSequenceNumbers.getOrDefault(playerUuid, 0L));
+        lastSequenceNumbers.put(playerUuid, packet.getSequenceNumber());
         if (!player.hasPermission(PermissionManager.SPEAK_PERMISSION)) {
             CooldownTimer.run("no-speak-" + playerUuid, () -> {
                 NetManager.sendStatusMessage(player, Component.translatable("message.voicechat.no_speak_permission"));

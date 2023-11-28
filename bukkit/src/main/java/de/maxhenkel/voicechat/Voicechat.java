@@ -21,6 +21,7 @@ import de.maxhenkel.voicechat.net.NetManager;
 import de.maxhenkel.voicechat.plugins.PluginManager;
 import de.maxhenkel.voicechat.plugins.impl.BukkitVoicechatServiceImpl;
 import de.maxhenkel.voicechat.plugins.impl.VoicechatServerApiImpl;
+import de.maxhenkel.voicechat.plugins.impl.audiochannel.AudioChannelImpl;
 import de.maxhenkel.voicechat.util.FriendlyByteBuf;
 import de.maxhenkel.voicechat.util.ToExternal;
 import de.maxhenkel.voicechat.voice.common.ExternalSoundPacket;
@@ -191,6 +192,8 @@ public final class Voicechat extends JavaPlugin {
 		MultiLib.on(this, "voicechat:proximity_sound_packet", (data) -> {
 			FriendlyByteBuf soundBuf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
 			ExternalSoundPacket packet = ExternalSoundPacket.fromBytes(soundBuf);
+
+            SERVER.getServer().externalLastSequenceNumbers.put(packet.getSoundPacket().getSender(), packet.getSoundPacket().getSequenceNumber());
 
 			ClientConnection connection = SERVER.getServer().getConnection(packet.getDestinationUser());
 			if (connection != null) {

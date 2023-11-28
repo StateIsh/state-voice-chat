@@ -31,6 +31,10 @@ public class MicPacket implements Packet<MicPacket> {
         return sequenceNumber;
     }
 
+    public void setSequenceNumber(long sequenceNumber) {
+        this.sequenceNumber = sequenceNumber;
+    }
+
     public boolean isWhispering() {
         return whispering;
     }
